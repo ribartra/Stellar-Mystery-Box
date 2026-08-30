@@ -5,7 +5,7 @@
 // ║  contracts/mystery_token/src/lib.rs                        ║
 // ╚═══════════════════════════════════════════════════════════╝
 export const tokenConfig = {
-  emoji: "🎁",
-  tagline: "Un token con historia",
-  color: "#FDDA24",
+  emoji: "🔥",
+  tagline: "Arde donde pisa",
+  color: "#FF5733",
 };

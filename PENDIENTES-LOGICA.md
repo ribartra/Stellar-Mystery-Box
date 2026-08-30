@@ -1,7 +1,7 @@
 # Pendientes de logica
 
-Este documento resume lo que falta para completar la logica funcional del
-proyecto `Stellar Mystery Box`.
+Este documento resume el estado funcional actual del proyecto `Stellar Mystery
+Box` y los pendientes opcionales para seguir construyendo despues del taller.
 
 ## Estado general
 
@@ -13,129 +13,183 @@ frontend React:
 - `frontend`: aplicacion web para conectar billetera, registrar la caja y
   enviar el regalo.
 
-El contrato del sorteo ya tiene la logica principal implementada y cubierta por
-tests. El contrato del token todavia conserva una funcion incompleta que bloquea
-el flujo final de envio.
+Los cuatro retos principales ya fueron completados:
 
-## Pendientes obligatorios
+- El token fue personalizado.
+- `transfer_with_fee` fue implementada.
+- Los contratos pasan tests.
+- El token fue desplegado en Stellar Testnet.
+- El frontend tiene IDs reales en `frontend/.env`.
+- La caja fue registrada en el sorteo y enviada al match asignado.
+- `MI-TOKEN.md` fue completado con el comprobante del taller.
 
-### 1. Completar `transfer_with_fee`
+## Logica obligatoria completada
+
+### 1. `transfer_with_fee`
 
 Archivo: `contracts/mystery_token/src/lib.rs`
 
-La funcion `transfer_with_fee` aun termina con:
+La funcion ya implementa el poder del token:
 
-```rust
-panic!("TODO Reto 2: completa esta funcion siguiendo las pistas");
-```
+- valida que `amount` sea mayor que cero.
+- valida que el emisor tenga saldo suficiente.
+- calcula la comision como `amount / 100`.
+- calcula el monto neto como `amount - fee`.
+- resta `amount` completo del balance del emisor.
+- suma `net` al balance del receptor.
+- reduce el `total_supply` en `fee`, quemando la comision.
 
-Para completar la logica debe:
-
-- validar que `amount` sea mayor que cero.
-- validar que el emisor tenga saldo suficiente.
-- calcular la comision como `amount / 100`.
-- calcular el monto neto como `amount - fee`.
-- restar `amount` completo del balance del emisor.
-- sumar `net` al balance del receptor.
-- reducir el `total_supply` en `fee`, quemando la comision.
-
-Referencia esperada:
+Implementacion actual:
 
 ```rust
 let fee = amount / 100;
 let net = amount - fee;
-
 let to_balance = read_balance(&env, &to);
+let supply = read_supply(&env);
+
 write_balance(&env, &from, from_balance - amount);
 write_balance(&env, &to, to_balance + net);
-
-let supply = read_supply(&env);
 write_supply(&env, supply - fee);
 ```
 
-Mientras esto no se implemente, el boton del frontend para enviar la caja falla,
-porque llama directamente a esta funcion.
-
-### 2. Personalizar datos del token
+### 2. Token personalizado
 
 Archivo: `contracts/mystery_token/src/lib.rs`
 
-Siguen los valores de plantilla:
+Valores actuales:
 
 ```rust
-const TOKEN_NAME: &str = "CAMBIAME";
-const TOKEN_SYMBOL: &str = "XXX";
+const TOKEN_NAME: &str = "FUEGO_R";
+const TOKEN_SYMBOL: &str = "FUR";
+const TOKEN_DECIMALS: u32 = 7;
+const INITIAL_SUPPLY: i128 = 1_000_000;
 ```
 
-Antes de desplegar el contrato final, deben reemplazarse por el nombre y simbolo
-del token del participante.
+### 3. IDs reales en el frontend
 
-Opcionalmente tambien puede actualizarse:
+Archivo local: `frontend/.env`
 
-```text
-frontend/src/config/tokenConfig.ts
-```
-
-Ese archivo solo cambia como se muestra la moneda en el frontend; la verdad del
-token vive en el contrato.
-
-### 3. Configurar IDs reales en el frontend
-
-Archivo base: `frontend/.env.example`
-
-Para que el frontend pueda operar contra Testnet debe existir `frontend/.env`
-con:
+Valores actuales:
 
 ```env
-VITE_MYSTERY_EXCHANGE_CONTRACT_ID=<EXCHANGE_ID_DEL_SORTEO>
-VITE_MYSTERY_TOKEN_CONTRACT_ID=<CONTRACT_ID_DEL_TOKEN>
+VITE_MYSTERY_EXCHANGE_CONTRACT_ID=CD3FN3KP4VLL5O7MDLYBUATU7K4ARPPGMQAOMOI2ZPJISUXDONWA7JNL
+VITE_MYSTERY_TOKEN_CONTRACT_ID=CAIOJR2N3AKO2LH2RQCVPH62SI3B73D6YLUNQGD25YRY5YHF5BTHJ2GI
 VITE_NETWORK=testnet
 ```
 
-Sin esos valores, los hooks del frontend no pueden construir clientes contra los
-contratos:
+`frontend/.env` no debe commitearse; esta correctamente ignorado por Git.
 
-- `frontend/src/hooks/useToken.ts`
-- `frontend/src/hooks/useRegistry.ts`
+### 4. Registro y envio del sorteo
+
+Contrato de sorteo:
+
+```text
+CD3FN3KP4VLL5O7MDLYBUATU7K4ARPPGMQAOMOI2ZPJISUXDONWA7JNL
+```
+
+Token propio:
+
+```text
+CAIOJR2N3AKO2LH2RQCVPH62SI3B73D6YLUNQGD25YRY5YHF5BTHJ2GI
+```
+
+Participante registrado:
+
+```text
+FUEGO_R (FUR)
+Owner: GBDGBEHR2XCETX4MKP3AA7PX6EPWN4A4TJ3KY6GVZN54ZT6VAGXH2SBX
+```
+
+Envio realizado:
+
+```text
+Destinatario: COStoken (COS)
+Owner: GBD3CYHYW3KRZJLFLX2L4M2BVB3ATVGM6BI2J64HJORINBLZK75TGZNO
+Monto enviado: 100 FUR
+Monto recibido: 99 FUR
+Comision quemada: 1 FUR
+```
 
 ## Verificacion realizada
 
-Se intento correr:
+Se corrio:
 
 ```bash
 pnpm run test:contracts
 ```
 
-pero `pnpm` no estaba instalado en el entorno local.
-
-Luego se corrio directamente:
-
-```bash
-cargo test --workspace
-```
-
 Resultado:
 
 - `mystery_exchange`: 9 tests pasan.
-- `mystery_token`: 3 tests fallan, todos relacionados con
-  `transfer_with_fee`.
+- `mystery_token`: 6 tests pasan.
+- Total: 15 tests pasan.
 
-Los tests fallidos son:
+Tambien se verifico en Testnet que el envio aplico la comision del 1%:
 
-- `test_transfer_with_fee_cobra_uno_por_ciento`
-- `test_transfer_with_fee_descuenta_el_monto_completo_al_emisor`
-- `test_transfer_with_fee_quema_la_comision_del_supply`
+- balance del destinatario en el token propio: `99`.
+- balance del owner despues del envio: `999900`.
 
-El error se origina en el `panic!("TODO Reto 2...")` de la funcion pendiente.
+## Pendientes opcionales Builder
 
-## Criterio de completitud
+### 1. Segundo poder: `airdrop`
 
-La logica puede considerarse completa cuando:
+Agregar una funcion nueva al contrato del token para enviar una cantidad fija a
+varios destinatarios en una sola llamada.
 
-- `transfer_with_fee` esta implementada.
-- `cargo test --workspace` pasa completo.
-- el token fue personalizado.
-- el contrato del token fue desplegado en Testnet.
-- `frontend/.env` tiene los IDs reales.
-- desde el frontend se puede registrar la caja y ejecutar el envio al match del
-  sorteo.
+Firma sugerida:
+
+```rust
+pub fn airdrop(env: Env, from: Address, recipients: Vec<Address>, amount: i128)
+```
+
+Comportamiento esperado:
+
+- `from.require_auth()`.
+- validar que `amount > 0`.
+- validar que `recipients` no este vacio.
+- calcular el total como `amount * recipients.len()`.
+- validar que `from` tenga saldo suficiente.
+- restar el total del balance de `from`.
+- sumar `amount` al balance de cada destinatario.
+- no modificar `total_supply`, porque no quema ni crea tokens.
+
+Tests sugeridos:
+
+- reparte el monto a todos los destinatarios.
+- descuenta el total correcto al emisor.
+- falla si el monto es cero o negativo.
+- falla si no hay destinatarios.
+- falla si el emisor no tiene saldo suficiente.
+
+Nota: agregar `airdrop` cambia el contrato fuente, pero no actualiza el
+contrato que ya fue desplegado. Para usarlo en Testnet habria que desplegar un
+nuevo contrato.
+
+### 2. Estetica propia
+
+Personalizar la interfaz en:
+
+```text
+frontend/src/styles.css
+```
+
+Este cambio no toca blockchain ni requiere redesplegar contratos.
+
+### 3. Segundo token
+
+Publicar una segunda caja con otro tema:
+
+1. Cambiar `TOKEN_NAME`, `TOKEN_SYMBOL`, `tokenConfig`, etc.
+2. Ejecutar:
+
+   ```bash
+   pnpm run deploy:testnet otro-alias
+   ```
+
+3. Guardar el nuevo `CONTRACT_ID`.
+
+## Criterio de completitud actual
+
+La logica principal del taller esta completa. A partir de este punto, cualquier
+cambio nuevo debe considerarse trabajo Builder opcional y conviene registrarlo
+en un commit separado.

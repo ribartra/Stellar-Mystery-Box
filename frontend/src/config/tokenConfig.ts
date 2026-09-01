@@ -7,5 +7,5 @@
 export const tokenConfig = {
   emoji: "🔥",
   tagline: "Arde donde pisa",
-  color: "#FF5733",
+  color: "#ff4b2b",
 };

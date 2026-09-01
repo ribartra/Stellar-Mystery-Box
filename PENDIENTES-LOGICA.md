@@ -121,19 +121,19 @@ pnpm run test:contracts
 Resultado:
 
 - `mystery_exchange`: 9 tests pasan.
-- `mystery_token`: 6 tests pasan.
-- Total: 15 tests pasan.
+- `mystery_token`: 12 tests pasan.
+- Total: 21 tests pasan.
 
 Tambien se verifico en Testnet que el envio aplico la comision del 1%:
 
 - balance del destinatario en el token propio: `99`.
 - balance del owner despues del envio: `999900`.
 
-## Pendientes opcionales Builder
+## Builder completado
 
 ### 1. Segundo poder: `airdrop`
 
-Agregar una funcion nueva al contrato del token para enviar una cantidad fija a
+Se agrego una funcion nueva al contrato del token para enviar una cantidad fija a
 varios destinatarios en una sola llamada.
 
 Firma sugerida:
@@ -153,7 +153,7 @@ Comportamiento esperado:
 - sumar `amount` al balance de cada destinatario.
 - no modificar `total_supply`, porque no quema ni crea tokens.
 
-Tests sugeridos:
+Tests agregados:
 
 - reparte el monto a todos los destinatarios.
 - descuenta el total correcto al emisor.
@@ -165,7 +165,9 @@ Nota: agregar `airdrop` cambia el contrato fuente, pero no actualiza el
 contrato que ya fue desplegado. Para usarlo en Testnet habria que desplegar un
 nuevo contrato.
 
-### 2. Estetica propia
+## Pendientes opcionales Builder
+
+### 1. Estetica propia
 
 Personalizar la interfaz en:
 
@@ -175,7 +177,7 @@ frontend/src/styles.css
 
 Este cambio no toca blockchain ni requiere redesplegar contratos.
 
-### 3. Segundo token
+### 2. Segundo token
 
 Publicar una segunda caja con otro tema:
 

@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::{MysteryToken, MysteryTokenClient};
-use soroban_sdk::{testutils::Address as _, Address, Env};
+use soroban_sdk::{testutils::Address as _, vec, Address, Env};
 
 fn setup() -> (Env, MysteryTokenClient<'static>, Address) {
     let env = Env::default();
@@ -79,4 +79,72 @@ fn test_transfer_with_fee_falla_sin_saldo() {
     let bob = Address::generate(&env);
 
     client.transfer_with_fee(&owner, &bob, &10_000_000);
+}
+
+#[test]
+fn test_airdrop_reparte_a_varios_destinatarios() {
+    let (env, client, owner) = setup();
+    let bob = Address::generate(&env);
+    let carol = Address::generate(&env);
+    let dave = Address::generate(&env);
+
+    client.airdrop(
+        &owner,
+        &vec![&env, bob.clone(), carol.clone(), dave.clone()],
+        &250,
+    );
+
+    assert_eq!(client.balance(&bob), 250);
+    assert_eq!(client.balance(&carol), 250);
+    assert_eq!(client.balance(&dave), 250);
+}
+
+#[test]
+fn test_airdrop_descuenta_total_al_emisor() {
+    let (env, client, owner) = setup();
+    let bob = Address::generate(&env);
+    let carol = Address::generate(&env);
+    let dave = Address::generate(&env);
+
+    client.airdrop(&owner, &vec![&env, bob, carol, dave], &250);
+
+    assert_eq!(client.balance(&owner), 1_000_000 - 750);
+}
+
+#[test]
+fn test_airdrop_no_cambia_supply_total() {
+    let (env, client, owner) = setup();
+    let bob = Address::generate(&env);
+    let carol = Address::generate(&env);
+
+    client.airdrop(&owner, &vec![&env, bob, carol], &100);
+
+    assert_eq!(client.total_supply(), 1_000_000);
+}
+
+#[test]
+#[should_panic(expected = "el monto tiene que ser mayor a cero")]
+fn test_airdrop_falla_con_monto_cero() {
+    let (env, client, owner) = setup();
+    let bob = Address::generate(&env);
+
+    client.airdrop(&owner, &vec![&env, bob], &0);
+}
+
+#[test]
+#[should_panic(expected = "necesitas al menos un destinatario")]
+fn test_airdrop_falla_sin_destinatarios() {
+    let (env, client, owner) = setup();
+
+    client.airdrop(&owner, &vec![&env], &100);
+}
+
+#[test]
+#[should_panic(expected = "saldo insuficiente")]
+fn test_airdrop_falla_sin_saldo_suficiente() {
+    let (env, client, owner) = setup();
+    let bob = Address::generate(&env);
+    let carol = Address::generate(&env);
+
+    client.airdrop(&owner, &vec![&env, bob, carol], &600_000);
 }

@@ -14,10 +14,34 @@ import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
 const RPC_URL = "https://soroban-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 
+// Red en la que vive el contrato ("testnet" | "public"). La usa Stellar Expert
+// para armar los links publicos del explorador.
+const NETWORK = (import.meta.env.VITE_NETWORK as string | undefined) ?? "testnet";
+
+/**
+ * Lo que devuelve `signAndSend`: el `result` ya decodificado y, cuando la
+ * transaccion se envio, la respuesta del RPC con el `hash` de la transaccion
+ * (asi podemos linkear a Stellar Expert).
+ */
+export interface SentResult<T> {
+  result: T;
+  sendTransactionResponse?: { hash: string };
+}
+
 /** Forma minima de lo que devuelve cada metodo del Client (result + signAndSend). */
 export interface AssembledCall<T> {
   result: T;
-  signAndSend: () => Promise<{ result: T }>;
+  signAndSend: () => Promise<SentResult<T>>;
+}
+
+/** Link publico a una transaccion en Stellar Expert. */
+export function explorerTxUrl(hash: string) {
+  return `https://stellar.expert/explorer/${NETWORK}/tx/${hash}`;
+}
+
+/** Link publico a un contrato (y su lista de transacciones) en Stellar Expert. */
+export function explorerContractUrl(contractId: string) {
+  return `https://stellar.expert/explorer/${NETWORK}/contract/${contractId}`;
 }
 
 export async function getContractClient<T = unknown>(

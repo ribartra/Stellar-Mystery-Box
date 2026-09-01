@@ -19,6 +19,18 @@ interface MysteryTokenContract {
     to: string;
     amount: bigint;
   }) => Promise<AssembledCall<null>>;
+  airdrop: (args: {
+    from: string;
+    recipients: string[];
+    amount: bigint;
+  }) => Promise<AssembledCall<null>>;
+}
+
+function parseRecipients(value: string) {
+  return value
+    .split(/[\s,;]+/)
+    .map((recipient) => recipient.trim())
+    .filter(Boolean);
 }
 
 export function useToken(publicKey: string | null) {
@@ -77,9 +89,12 @@ export function useToken(publicKey: string | null) {
     await refresh();
   }, [publicKey, refresh]);
 
-  /** Envia tu regalo (con la comision/quema del Reto 2) a quien te toco en el sorteo. */
+  /**
+   * Envia tu regalo (con la comision/quema del Reto 2) a quien te toco en el
+   * sorteo. Devuelve el hash de la transaccion para poder linkearla.
+   */
   const sendGift = useCallback(
-    async (to: string, amount: number) => {
+    async (to: string, amount: number): Promise<string | null> => {
       if (!publicKey) throw new Error("Conecta tu billetera primero");
       if (!TOKEN_CONTRACT_ID) {
         throw new Error("Todavia no configuraste tu moneda. Sigue el Reto 3 de la guia.");
@@ -91,6 +106,38 @@ export function useToken(publicKey: string | null) {
       const tx = await client.transfer_with_fee({
         from: publicKey,
         to,
+        amount: BigInt(Math.trunc(amount)),
+      });
+      const sent = await tx.signAndSend();
+      await refresh();
+      return sent.sendTransactionResponse?.hash ?? null;
+    },
+    [publicKey, refresh]
+  );
+
+  /** Envia la misma cantidad de tokens a varias billeteras en una sola transaccion. */
+  const airdrop = useCallback(
+    async (recipientsText: string, amount: number) => {
+      if (!publicKey) throw new Error("Conecta tu billetera primero");
+      if (!TOKEN_CONTRACT_ID) {
+        throw new Error("Todavia no configuraste tu moneda. Sigue el Reto 3 de la guia.");
+      }
+
+      const recipients = parseRecipients(recipientsText);
+      if (recipients.length === 0) {
+        throw new Error("Pega al menos una direccion Stellar para enviar el airdrop.");
+      }
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("El monto del airdrop tiene que ser mayor a cero.");
+      }
+
+      const client = await getContractClient<MysteryTokenContract>(
+        TOKEN_CONTRACT_ID,
+        publicKey
+      );
+      const tx = await client.airdrop({
+        from: publicKey,
+        recipients,
         amount: BigInt(Math.trunc(amount)),
       });
       await tx.signAndSend();
@@ -110,5 +157,6 @@ export function useToken(publicKey: string | null) {
     refresh,
     mint,
     sendGift,
+    airdrop,
   };
 }

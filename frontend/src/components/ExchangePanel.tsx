@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { useWallet } from "../hooks/useWallet";
 import type { useToken } from "../hooks/useToken";
 import { useRegistry, type BoxEntry } from "../hooks/useRegistry";
-import { getContractClient, type AssembledCall } from "../lib/soroban";
+import { getContractClient, explorerTxUrl, type AssembledCall } from "../lib/soroban";
 
 interface AdmirerTokenContract {
   balance: (args: { id: string }) => Promise<AssembledCall<bigint>>;
@@ -23,6 +23,7 @@ export function ExchangePanel({ wallet, token }: ExchangePanelProps) {
   const [receivedBalance, setReceivedBalance] = useState<number | null>(null);
   const [amount, setAmount] = useState(DEFAULT_AMOUNT);
   const [sent, setSent] = useState(false);
+  const [sentHash, setSentHash] = useState<string | null>(null);
 
   useEffect(() => {
     if (wallet.address) exchange.refresh();
@@ -157,7 +158,8 @@ export function ExchangePanel({ wallet, token }: ExchangePanelProps) {
                 className="btn btn--primary"
                 onClick={() =>
                   withBusy("send", async () => {
-                    await token.sendGift(myMatch.owner, Number(amount) || 0);
+                    const hash = await token.sendGift(myMatch.owner, Number(amount) || 0);
+                    setSentHash(hash);
                     setSent(true);
                   })
                 }
@@ -171,6 +173,19 @@ export function ExchangePanel({ wallet, token }: ExchangePanelProps) {
           {sent && (
             <p className="mint-panel__success">
               ✅ Le mandaste tu caja a {myMatch?.name}.
+              {sentHash && (
+                <>
+                  {" "}
+                  <a
+                    className="tx-link"
+                    href={explorerTxUrl(sentHash)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Ver la transaccion ↗
+                  </a>
+                </>
+              )}
             </p>
           )}
 

@@ -1,24 +1,12 @@
-import { useEffect } from "react";
 import type { useWallet } from "../hooks/useWallet";
-import { useRegistry } from "../hooks/useRegistry";
+import type { useRegistry } from "../hooks/useRegistry";
 
 interface SharedBoardProps {
   wallet: ReturnType<typeof useWallet>;
+  registry: ReturnType<typeof useRegistry>;
 }
 
-const POLL_MS = 8000;
-
-export function SharedBoard({ wallet }: SharedBoardProps) {
-  const registry = useRegistry(wallet.address);
-
-  useEffect(() => {
-    if (!wallet.address) return;
-    registry.refresh();
-    const interval = setInterval(registry.refresh, POLL_MS);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet.address]);
-
+export function SharedBoard({ wallet, registry }: SharedBoardProps) {
   return (
     <section className="card shared-board">
       <h2>🌌 La sala</h2>

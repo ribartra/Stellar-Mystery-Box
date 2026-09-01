@@ -12,6 +12,13 @@ guardarlo con un commit es el **Commit 4**.
 - **A quien le mande mi caja:** COStoken (COS) - GBD3CYHYW3KRZJLFLX2L4M2BVB3ATVGM6BI2J64HJORINBLZK75TGZNO
 - **Quien me mando la mia:** Token del Cosmos (COS) - GA6UEXR7QHVJOUV5ZXV4VOFNHLRUXUYVH4LM7QV4Q674S3VLVGFZ35MP
 
+> **Nota builder (airdrop):** el envio original del taller se hizo con el
+> contrato de arriba. Para agregar el poder `airdrop` volvi a desplegar el
+> mismo token (mismo owner `ribartra`) en un contrato nuevo, que es el que usa
+> hoy el frontend (`frontend/.env`):
+> - **CONTRACT_ID con airdrop:** CBDQSC64PWO4FWJUFF7DGH3IQFLPR555DWDHQX3MU4NLWD7WKM4WVYSS
+> - `https://stellar.expert/explorer/testnet/contract/CBDQSC64PWO4FWJUFF7DGH3IQFLPR555DWDHQX3MU4NLWD7WKM4WVYSS`
+
 ## Que construi hoy?
 
 Construí un token propio en Stellar Testnet, lo desplegué como contrato Soroban y lo usé en un sorteo compartido enviando una caja con comisión quemada.

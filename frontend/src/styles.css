@@ -113,6 +113,13 @@ code {
   gap: 1.75rem;
 }
 
+.shared-board {
+  /* El tablero en vivo ocupa todo el ancho, en su propia fila. Con
+     auto-fit, si quedara como una tarjeta mas, terminaria sola pegada a
+     la izquierda cuando el resto no llena una fila completa. */
+  grid-column: 1 / -1;
+}
+
 .app__footer {
   text-align: center;
   margin-top: 3.5rem;

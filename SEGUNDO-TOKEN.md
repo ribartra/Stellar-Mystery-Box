@@ -24,7 +24,7 @@ desde el frontend. Es el token al que apunta hoy `frontend/.env`
 - **Stellar Expert:**
   `https://stellar.expert/explorer/testnet/contract/CBHAUDGUDHHCHHFZX6A2JGGF74HGIOUBVB3XFJRVH5PYPYPN4Z4A2W7E`
 
-## Poderes incluidos
+## Poderes incluidos (Retos opcionales previos)
 
 - `transfer_with_fee`: transfiere quemando la comisión del 1%.
 - `airdrop`: envía la misma cantidad a varias direcciones en una sola

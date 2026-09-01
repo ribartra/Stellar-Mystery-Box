@@ -5,7 +5,7 @@
 // ║  contracts/mystery_token/src/lib.rs                        ║
 // ╚═══════════════════════════════════════════════════════════╝
 export const tokenConfig = {
-  emoji: "🔥",
-  tagline: "Arde donde pisa",
-  color: "#ff4b2b",
+  emoji: "⚡",
+  tagline: "Impredecible y directo al punto",
+  color: "#FFD700",
 };
